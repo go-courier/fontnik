@@ -24,6 +24,7 @@ func TestSDFBuilder(t *testing.T) {
 		for i := 0; i < 255; i++ {
 			g := builder.Glyph(rune(i))
 			if g != nil {
+				fmt.Printf("%s %d\n", string(*g.Id), *g.Top)
 				img := DrawGlyph(g, true)
 				SavePNG(fmt.Sprintf("./testdata/%d.png", i), img)
 			}

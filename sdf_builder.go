@@ -52,8 +52,8 @@ func (b *SDFBuilder) Init() {
 	}
 
 	b.Face = truetype.NewFace(b.Font, &truetype.Options{
-		Size: b.FontSize,
-		//Hinting: font.HintingFull,
+		Size:    b.FontSize,
+		Hinting: font.HintingFull,
 	})
 }
 
@@ -100,7 +100,7 @@ func (b *SDFBuilder) Glyph(x rune) *Glyph {
 	id := uint32(x)
 	width := uint32(size.X)
 	height := uint32(size.Y)
-	top := -int32(metrics.Descent.Floor())
+	top := - int32(metrics.Height.Floor() + bounds.Min.Y)
 	left := int32(bounds.Min.X)
 	a := uint32(advance.Floor())
 
