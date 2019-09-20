@@ -6,3 +6,5 @@ go.sum
 
 *.png
 *.pbf
+
+./testdata/NotoSansCJKsc-Regular.ttf

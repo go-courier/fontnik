@@ -41,11 +41,12 @@ type SDFBuilder struct {
 	Font *truetype.Font
 	Face font.Face
 	SDFBuilderOpt
+	dotStartY int
 }
 
 func (b *SDFBuilder) Init() {
 	if b.FontSize == 0 {
-		b.FontSize = 24
+		b.FontSize = 64
 	}
 	if b.Buffer == 0 {
 		b.Buffer = 3
@@ -55,6 +56,15 @@ func (b *SDFBuilder) Init() {
 		Size:    b.FontSize,
 		Hinting: font.HintingFull,
 	})
+
+	metrics := b.Face.Metrics()
+
+	// https://developer.apple.com/library/archive/documentation/TextFonts/Conceptual/CocoaTextArchitecture/Art/glyph_metrics_2x.png
+
+	fontDesignedHeight := metrics.Ascent.Floor() + metrics.Descent.Floor()
+	fixed := int(math.Round(float64(metrics.Height.Floor()-fontDesignedHeight)/2)) + 1
+
+	b.dotStartY = metrics.Height.Floor() + metrics.Descent.Floor() + fixed
 }
 
 func (b *SDFBuilder) Glyphs(min int, max int) *Glyphs {
@@ -89,22 +99,24 @@ func (b *SDFBuilder) Glyph(x rune) *Glyph {
 		return nil
 	}
 
-	bounds, mask, maskp, advance, ok := b.Face.Glyph(fixed.P(0, 0), x)
+	bounds, mask, maskp, advance, ok := b.Face.Glyph(fixed.P(0, b.dotStartY), x)
 	if !ok {
 		return nil
 	}
 
-	// https://developer.apple.com/library/archive/documentation/TextFonts/Conceptual/CocoaTextArchitecture/Art/glyph_metrics_2x.png
-
-	metrics := b.Face.Metrics()
 	size := bounds.Size()
 
-	fixedAscent := metrics.Height.Floor() + metrics.Descent.Floor()
-
-	id := uint32(x)
 	width := uint32(size.X)
 	height := uint32(size.Y)
-	top := -int32(bounds.Min.Y + fixedAscent)
+
+	if width == 0 || height == 0 {
+		return nil
+	}
+
+	buffer := int(b.Buffer)
+	id := uint32(x)
+
+	top := -int32(bounds.Min.Y)
 	left := int32(bounds.Min.X)
 	a := uint32(advance.Floor())
 
@@ -117,13 +129,10 @@ func (b *SDFBuilder) Glyph(x rune) *Glyph {
 		Advance: &a,
 	}
 
-	buffer := int(b.Buffer)
-
 	w := int(*g.Width) + buffer*2
 	h := int(*g.Height) + buffer*2
 
 	dst := image.NewRGBA(image.Rect(0, 0, w, h))
-
 	draw.DrawMask(dst, dst.Bounds(), &image.Uniform{image.Black}, image.ZP, mask, maskp.Sub(image.Pt(buffer, buffer)), draw.Over)
 
 	g.Bitmap = CalcSDF(dst, 8, 0.25)

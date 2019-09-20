@@ -7,4 +7,4 @@
 
 Generates Signed Distance Field glyphsets from OpenType fonts
 
-Inspired by https://github.com/mapbox/tiny-sdf
+Inspired by <https://github.com/mapbox/sdf-glyph-foundry> <https://github.com/mapbox/tiny-sdf>
