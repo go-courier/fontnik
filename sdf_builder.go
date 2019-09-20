@@ -94,13 +94,17 @@ func (b *SDFBuilder) Glyph(x rune) *Glyph {
 		return nil
 	}
 
+	// https://developer.apple.com/library/archive/documentation/TextFonts/Conceptual/CocoaTextArchitecture/Art/glyph_metrics_2x.png
+
 	metrics := b.Face.Metrics()
 	size := bounds.Size()
+
+	fixedAscent := metrics.Height.Floor() + metrics.Descent.Floor()
 
 	id := uint32(x)
 	width := uint32(size.X)
 	height := uint32(size.Y)
-	top := - int32(metrics.Height.Floor() + bounds.Min.Y)
+	top := -int32(bounds.Min.Y + fixedAscent)
 	left := int32(bounds.Min.X)
 	a := uint32(advance.Floor())
 

@@ -26,15 +26,21 @@ func TestSDFBuilder(t *testing.T) {
 			if g != nil {
 				fmt.Printf("%s %d\n", string(*g.Id), *g.Top)
 				img := DrawGlyph(g, true)
-				SavePNG(fmt.Sprintf("./testdata/%d.png", i), img)
+				SavePNG(fmt.Sprintf("./testdata/Lato/%d.png", i), img)
 			}
 		}
 	})
 
 	t.Run("#Glyphs", func(t *testing.T) {
-		s := builder.Glyphs(0, 255)
-		bytes, err := proto.Marshal(s)
-		require.NoError(t, err)
-		ioutil.WriteFile("./testdata/0-255.pbf", bytes, os.ModePerm)
+		for _, rng := range [][]int{
+			{0, 255},
+			//{20224, 20479},
+			//{22784, 23039},
+		} {
+			s := builder.Glyphs(rng[0], rng[1])
+			bytes, err := proto.Marshal(s)
+			require.NoError(t, err)
+			ioutil.WriteFile(fmt.Sprintf("./testdata/Lato/%d-%d.pbf", rng[0], rng[1]), bytes, os.ModePerm)
+		}
 	})
 }
